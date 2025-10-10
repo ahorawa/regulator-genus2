@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/acampo/Library/Python/3.9/lib/python/site-packages')
+
 import scipy.integrate as spyint
 import numpy as np
 import scipy as sp
@@ -28,6 +31,35 @@ def regulator_integral(f, a = 1):
     )
 
     return result + sum([np.pi**1.5 * const[i] for i in range(deg)]), error
+
+# g : a list of 5 rational numbers, corresponding to the polynomial g[0] * x**4 + ... + g[4].
+# Compute the integral log|z| Re(z*z) /|g(z*z)| over the complex plane
+def regulator_integral_ws(g):
+    assert len(g) == 5
+
+    f = [g[0],0,g[1],0,g[2],0,g[3],0,g[4]]
+    roots = np.roots(f)
+    fder = np.polyder(f)
+
+    const = [(r**2).real*np.log(np.abs(r))/np.abs(np.polyval(fder, r))  for r in roots]
+
+    correction = lambda z, z0 : np.exp(- np.abs(z - z0)**2) / np.abs(z - z0)
+    correction_full = lambda z : sum([c  * correction(z, r) for (c,r) in zip(const,roots)])
+    f_corrected = lambda z : (z**2).real * np.log(np.abs(z))/np.abs(np.polyval(f,z)) - correction_full(z)
+
+    # Evaluate integral
+    r = lambda s : s / (1 - s)
+    integrand = lambda s, theta : f_corrected(r(s)*np.exp(theta*1j)) * r(s) / (1 - s)**2
+    result, error = spyint.nquad(
+        integrand,
+        [[0, 1], [0, 2*np.pi]],
+        opts = {'limit' : 80, 'epsabs' : 1e-10, 'epsrel' : 1e-10}
+    )
+
+    return result + sum([np.pi**1.5 * c for c in const]), error
+
+
+
 
 # f : a list of rational numbers, corresponding to the polynomial f[0] * x**n + ... + f[n]
 # Compute the period matrix of the hyperelliptic curve y^2 = f(x)
