@@ -32,6 +32,40 @@ def regulator_integral(f, a = 1):
 
     return result + sum([np.pi**1.5 * const[i] for i in range(deg)]), error
 
+# f : a list of rational numbers, corresponding to the polynomial f[0] * x**n + ... + f[n], where n = 5 or n = 6.
+# h : a function to integrate
+# Compute the integral h(z) /|f(z)| over the complex plane
+def hyperell_integral(f, h):
+    deg = len(f) - 1
+
+    roots = np.roots(f)
+    fder = np.polyder(f)
+    const = [h(r)/np.abs(np.polyval(fder, r))  for r in roots]
+    
+    correction = lambda z, z0 : np.exp(- np.abs(z - z0)**2) / np.abs(z - z0)
+    correction_full = lambda z : sum([c  * correction(z, r) for (c,r) in zip(const,roots)])
+    f_corrected = lambda z : h(z)/np.abs(np.polyval(f, z)) - correction_full(z)
+
+    # Evaluate integral
+    r = lambda s : s / (1 - s)
+    def z_from(s, theta):
+        rr = r(s)
+        return rr * np.exp(1j * theta)
+
+    def integrand_real(s, theta):
+        z = z_from(s, theta)
+        jac = r(s) / (1 - s)**2
+        return (f_corrected(z).real) * jac
+    
+    opts = {'limit': 80, 'epsabs': 1e-10, 'epsrel': 1e-10}
+    result, err = spyint.nquad(integrand_real, [[0, 1], [0, 2 * np.pi]], opts=opts)
+
+    # add back the analytic integrals of the subtracted local singular approximations
+    correction_sum = sum([np.pi**1.5 * c for c in const])
+
+    return 4*(result + correction_sum), err
+
+
 # g : a list of 5 rational numbers, corresponding to the polynomial g[0] * x**4 + ... + g[4].
 # Compute the integral log|z| Re(z*z) /|g(z*z)| over the complex plane
 def regulator_integral_ws(g):
@@ -53,13 +87,10 @@ def regulator_integral_ws(g):
     result, error = spyint.nquad(
         integrand,
         [[0, 1], [0, 2*np.pi]],
-        opts = {'limit' : 80, 'epsabs' : 1e-10, 'epsrel' : 1e-10}
+        opts = {'limit' : 500, 'epsabs' : 1e-13, 'epsrel' : 1e-13}
     )
 
     return result + sum([np.pi**1.5 * c for c in const]), error
-
-
-
 
 # f : a list of rational numbers, corresponding to the polynomial f[0] * x**n + ... + f[n]
 # Compute the period matrix of the hyperelliptic curve y^2 = f(x)
