@@ -104,9 +104,26 @@ def cycles_intersection(f, basepoints, cycles):
     
     return intersection_matrix      
 
+def crosses_negative_real_axis(z1, z2, eps=1e-12):
+    """
+    Returns True if the segment from z1 to z2 crosses the negative real axis.
+    """
+    # Check if imaginary parts straddle 0
+    if (z1.imag > eps and z2.imag < -eps) or (z1.imag < -eps and z2.imag > eps):
+        # Find intersection with imag = 0
+        t = -z1.imag / (z2.imag - z1.imag)
+        x = z1.real + t * (z2.real - z1.real)
+        return x < 0
+    return False
+
 def homology_basis(f, avoid = [], realroots = False):
     roots = np.roots(f)
     roots.sort()
+    if not realroots:
+        angles = np.angle(roots)
+        order = np.argsort(angles)
+        roots = roots[order]
+        
     siteslist = list(roots) + avoid
     
     if realroots:
@@ -128,11 +145,18 @@ def homology_basis(f, avoid = [], realroots = False):
         if -1 in ridge:
             continue
         i, j = ridge
+        z1 = vor.vertices[i][0] + 1j*vor.vertices[i][1]
+        z2 = vor.vertices[j][0] + 1j*vor.vertices[j][1]
+        if crosses_negative_real_axis(z1, z2):
+            continue
         length = np.linalg.norm(vor.vertices[i] - vor.vertices[j])
         G.add_edge(i, j, weight=length)
 
-    start = int(np.argmax([min([np.abs(x[0] + x[1]*1j - a) for a in avoid]) for x in vor.vertices]))
-
+    if len(avoid) > 0:
+        start = int(np.argmax([min([np.abs(x[0] + x[1]*1j - a) for a in avoid]) for x in vor.vertices]))
+    else:
+        start = 0
+        
     cycles = []
     if len(roots) % 2 == 0:
         d = 2
@@ -179,7 +203,7 @@ def homology_basis(f, avoid = [], realroots = False):
 
 def test3125():
     f = [4, 0, 0, 0, 0, -1]
-    basepoints, cycles = homology_basis(f, [-1])
+    basepoints, cycles = homology_basis(f, [-0.5, -1])
     intersection_matrix = cycles_intersection(f, basepoints, cycles)
     print("f: ", f)
     print("Basepoints: ")
@@ -191,6 +215,8 @@ def test3125():
     for row in intersection_matrix:
         print(row)
     plot_cycles(f, basepoints, cycles)
+
+#test3125()
 
 def testrealroots():
     f = [1, -10, 35, - 50, 24, 0]
@@ -206,3 +232,5 @@ def testrealroots():
     for row in intersection_matrix:
         print(row)
     plot_cycles(f, basepoints, cycles)
+    
+#testrealroots()
