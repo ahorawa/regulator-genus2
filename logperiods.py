@@ -4,11 +4,14 @@ import numpy as np
 from sage.interfaces.magma_free import magma_free
 from sage.interfaces.gp import *
 from sage.rings import real_mpfr
-
+ 
 import homology
 
+import requests
+
+
 # set arbitrary precision
-mp.dps = 100
+mp.dps = 500
 
 # --- helpers ---
 def mp_polyval(f, x):
@@ -130,6 +133,10 @@ class HyperEllCurve:
             self.basepoints, self.cycles = homology.homology_basis(self.f, [], realroots = realroots)
             self.intersection_matrix = homology.cycles_intersection(self.f, self.basepoints, self.cycles)
             self.basepoints = [mpc(x) for x in self.basepoints]
+        else:
+            self.basepoints = None
+            self.cycles = None
+            self.intersection_matrix = None
         self._periods = None
         self._periods2 = None
     
@@ -145,7 +152,8 @@ class HyperEllCurve:
     
     def __str__(self):
         str = f"Genus {self.genus} curve: y^2 = " + poly_to_str(self.f)
-        str += "\n" + self._str_homology()
+        if not (self.cycles is None):
+            str += "\n" + self._str_homology()
         if not (self._periods is None):
             str += "\nPeriod matrix:"
             for p in self._periods:
@@ -184,21 +192,59 @@ class HyperEllCurve:
         G = mp.matrix(gram)
         return mp.det(G)
     
+    @classmethod
+    def g2fromLMFDB(cls, label, realroots = False, inithomology = True):
+        url = "https://www.lmfdb.org/api/g2c_curves/"
+        params = {
+            "_format": "json",
+            "label": f"{label}"
+        }
+
+        response = requests.get(url, params)
+        print("Status:", response.status_code)
+        print("Content-Type:", response.headers.get("Content-Type"))
+
+        print(label)
+        data = response.json()
+
+        curve = data["data"][0]
+
+        # Hyperelliptic equation coefficients
+        eqn = eval(curve["eqn"])
+        f = eqn[0]
+        f.reverse()
+        g = eqn[1]
+        g.reverse()
+        
+        h = np.polyadd(np.polymul(f,[4]),np.polymul(g, g))
+        return cls([int(c) for c in h], realroots, inithomology)
+
+
 class PointedHyperEllCurve(HyperEllCurve):
     
     def __init__(self, f, points, realroots = False, inithomology = True):
-        super().__init__(f, realroots = realroots, inithomology=False)
+        if isinstance(f, HyperEllCurve):
+            self.f = f.f
+            self.genus = f.genus
+            self.basepoints = f.basepoints
+            self.cycles = f.cycles
+            self.intersection_matrix = f.intersection_matrix
+            self._periods = f._periods
+            self._periods2 = f._periods2
+        else:
+            super().__init__(f, realroots = realroots, inithomology=False)
+            if inithomology:
+                self.basepoints, self.cycles = homology.homology_basis(self.f, points, realroots = realroots)
+                self.intersection_matrix = homology.cycles_intersection(self.f, self.basepoints, self.cycles)
+                self.basepoints = [mpc(x) for x in self.basepoints]
         self.points = [mpc(p) for p in points]
-        if inithomology:
-            self.basepoints, self.cycles = homology.homology_basis(self.f, points, realroots = realroots)
-            self.intersection_matrix = homology.cycles_intersection(self.f, self.basepoints, self.cycles)
-            self.basepoints = [mpc(x) for x in self.basepoints]
         self._logperiods = None
         self._partialperiods = None
 
     def __str__(self):
         str = f"Pointed (x in {self.points}) genus {self.genus} curve: y^2 = " + poly_to_str(self.f)
-        str += "\n" + self._str_homology()
+        if not (self.cycles is None):
+            str += "\n" + self._str_homology()
         if not (self._periods is None):
             str += "\nPeriod matrix:"
             for p in self._periods:
@@ -244,7 +290,29 @@ class PointedHyperEllCurve(HyperEllCurve):
   
         return mp.matrix(mat)
     
-    
+    def test_beilinson(self, lvalue, lindep_digits, s = 1):
+        assert s in [1,2], "s must be either 1 or 2" 
+        vol = self.jacobian_volume().real
+        beilinson = self.beilinson_matrix()
+        print("Beilinson matrix: ")
+        print(beilinson)
+        beilinson_det = mp.det(beilinson).real
+        
+        if s == 1:
+            print("L'(1): ", lvalue)
+            print("Vol: ", vol)
+            print("Reg: ", beilinson_det)
+            a, b = gp.lindep([lvalue * vol * pi, beilinson_det], lindep_digits)
+            print("lindep [L'(1) * vol * pi, reg]: ", a, b)
+            print("lindep error: ", int(a)* lvalue * vol * pi + int(b) * beilinson_det )
+        else:
+            print("L(2): ", lvalue)
+            print("Vol: ", vol)
+            print("Reg: ", beilinson_det)
+            a, b = gp.lindep([lvalue * vol, pi**4 * beilinson_det], lindep_digits)
+            print("lindep [L(2) * vol, pi^4 * reg]: ", a, b)
+            print("lindep error: ", int(a)* lvalue * vol + int(b) * pi**4 * beilinson_det )
+            
 def parse_mpc(s):
     """
     Parse a string like:
@@ -271,9 +339,42 @@ def parse_mpc(s):
         # purely real
         return mpc(mpf(s), mpf(0))
 
-def testvolume():
+def test3125():
     f = [4, 0, 0, 0, 0, -1]
+    C = PointedHyperEllCurve(f, [0, -1], inithomology=False)
+    C.init_homology([0, -0.5, -1])
+    print(C)
+
+    lvalue = parse_mpc(magma_free("M := JacobiMotive([1/5,1/5,1/5], [3/5]); chi := Grossencharacter(M); L := LSeries(chi : Precision := 100); Evaluate(L,2);"))
+    lvalue = lvalue.real
+
+    gp("default(realprecision, 100)")
+    ldir = mpf(str(gp("lfun(5,1)")))
+    lvalue = lvalue * ldir
+
+    #lvalue = mpf('0.35445162981482511890665852501155568022')
+    C.test_beilinson(lvalue, 10, s = 2)
+
+# https://www.lmfdb.org/Genus2Curve/Q/394/a/3152/1
+def test394():
+    C0 = HyperEllCurve.g2fromLMFDB("394.a.3152.1", inithomology = False)
+    C = PointedHyperEllCurve(C0, [0, -1])
+    print(C)
+    C.init_homology([0, -0.5, -1])
+    
+    lvalue2 = mpf('0.85875464247178527993941189389477680680')
+    lvalue1 = mpf('8.5704886281089963868641526976072444724') # lfuncheck = 1.9e-31
+    
+    C.test_beilinson(lvalue1, 10)
+    
+
+from regulator_integral_numpy import hyperell_integral, cplus, cminus
+
+def testvolume():
+    f = [-4,0, 0, 1, 2, 1]
     C = HyperEllCurve(f)
+    print(C)
+    C.plot_cycles()
     vol = C.jacobian_volume().real
     print("Cplus: ", cplus(f))
     print("Cminus: ", cminus(f))
@@ -284,30 +385,7 @@ def testvolume():
     print("lindep: ", a, b)
     print("evaluate: ", int(a)* vol + int(b)*cplus(f)*cminus(f) )
 
-def test3125():
-    f = [4, 0, 0, 0, 0, -1]
-    C = PointedHyperEllCurve(f, [0, -1], inithomology=False)
-    C.init_homology([0, -0.5, -1])
 
-    vol = C.jacobian_volume().real
-    beilinson = C.beilinson_matrix()
-    print(C)
-    print("Beilinson matrix: ")
-    print(beilinson)
-    beilinson_det = mp.det(beilinson).real
-    
-
-    #lvalue = parse_mpc(magma_free("M := JacobiMotive([1/5,1/5,1/5], [3/5]); chi := Grossencharacter(M); L := LSeries(chi : Precision := 100); Evaluate(L,1 : Derivative := 1);"))
-    lvalue = mpf('0.35445162981482511890665852501155568022')
-    print("L'(2): ", lvalue)
-    print("Vol: ", vol)
-    print("Reg: ", beilinson_det)
-    print(lvalue * vol * 25 - pi**4*beilinson_det)
-    
-    #print("L(1): ", lvalue.real)
-    #print("25 L(2) - pi * reg = ", 25*lvalue.real - pi * beilinson[1, 1].imag)
-
-from regulator_integral_numpy import hyperell_integral, cplus, cminus
 
 def testoldbeilinson():
     f = [-4, 0, 0, 1, 2, 1]
@@ -327,29 +405,10 @@ def testoldbeilinson():
     for row in old_beilinson:
         print(row)
         
-# https://www.lmfdb.org/Genus2Curve/Q/394/a/3152/1
-def test394():
-    f = [-4, 0, 0, 1, 2, 1]
-    C = PointedHyperEllCurve(f, [0, -1], inithomology=False)
-    C.init_homology([0, -0.5, -1])
-    vol = C.jacobian_volume().real
-    beilinson = C.beilinson_matrix()
-    print(C)
-    print("Beilinson matrix: ")
-    print(beilinson)
-    beilinson_det = mp.det(beilinson).real
-    
-    lvalue2 = mpf('0.85875464247178527993941189389477680680')
-    lvalue = mpf('8.5704886281089963868641526976072444724') # lfuncheck = 1.9e-31
-    print("L(2): ", lvalue2)
-    print("Vol: ", vol)
-    print("Reg: ", beilinson_det)
-    a, b = gp.lindep([lvalue2 * vol, pi**4 * beilinson_det], 8)
-    print("lindep: ", a, b)
-    print("evaluate: ", int(a)* lvalue2 * vol + int(b)*pi**4 * beilinson_det )
 
     
-    
-test394()
-#test3125()
+#test394()
+test3125()
 #testvolume()
+
+
