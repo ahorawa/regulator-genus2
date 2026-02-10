@@ -1,0 +1,253 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\csgray\c0;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs22 \cf2 \CocoaLigature0 /*    1 */   R<x> := PolynomialRings(Rationals());\
+/*    2 */   R<x> := PolynomialRing(Rationals());\
+/*    3 */   R;\
+/*    4 */   a := 1;\
+/*    5 */   b := 1;\
+/*    6 */   g(x) := x^2 +a*x + b;\
+/*    7 */   g := x^2 +a*x + b;\
+/*    8 */   g;\
+/*    9 */   g(1);\
+/*   10 */   g;\
+/*   11 */   Parent(g);\
+/*   12 */   g;\
+/*   13 */   C := HyperellipticCurve( x^5 - g^2 );\
+/*   14 */   C;\
+/*   15 */   J := Jacobian(C);\
+/*   16 */   J;\
+/*   17 */   EndomorphismRing(J);\
+/*   18 */   EndomorphismRing(AnalyticJacobian(C));\
+/*   19 */   C;\
+/*   20 */   Discriminant(C);\
+/*   21 */   Conductor(C);\
+/*   22 */   AbsoluteDiscriminant(C);\
+/*   23 */   C;\
+/*   24 */   WeierstrassPoints(C);\
+/*   25 */   f := x^5 - g^2;\
+/*   26 */   f;\
+/*   27 */   Roots(f);\
+/*   28 */   g;\
+/*   29 */   for a in [-5 .. 5] do\
+/*   30 */   for b in [-5 .. 5] do\
+/*   31 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*   32 */   C := HyperellipticCurve(f);\
+/*   33 */   J := AnalyticJacobian(C);\
+/*   34 */   E := EndomorphismRing(J);\
+/*   35 */   print(f);\
+/*   36 */   print(E);\
+/*   37 */   print(Conductor(C));\
+/*   38 */   end for;\
+/*   39 */   end for;\
+/*   40 */   E;\
+/*   41 */   R!MinimalPolynomial(E.1);\
+/*   42 */   Derivative(f);\
+/*   43 */   Gcd(f, Derivative(f));\
+/*   44 */   f;\
+/*   45 */   Gcd(f, 1);\
+/*   46 */   for a in [-5 .. 5] do\
+/*   47 */   for b in [-5 .. 5] do\
+/*   48 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*   49 */   if Gcd(f, Derivative(f)) == 1 then\
+/*   50 */   if Gcd(f, Derivative(f)) = 1 then\
+/*   51 */   continue;\
+/*   52 */   end if;\
+/*   53 */   for a in [-5 .. 5] do\
+/*   54 */   for b in [-5 .. 5] do\
+/*   55 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*   56 */   if not Gcd(f, Derivative(f)) = 1 then\
+/*   57 */   continue;\
+/*   58 */   end if;\
+/*   59 */   C := HyperellipticCurve(f);\
+/*   60 */   E := EndomorphismRing(J);\
+/*   61 */   end for;\
+/*   62 */   end for;\
+/*   63 */   Gcd(f, Derivative(f)) = x\
+/*   64 */   ;\
+/*   65 */   Gcd(f, Derivative(f)) == x\
+/*   66 */   Gcd(f, Derivative(f)) eq x\
+/*   67 */   ;\
+/*   68 */   for a in [-5 .. 5] do\
+/*   69 */   for b in [-5 .. 5] do\
+/*   70 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*   71 */   if not Gcd(f, Derivative(f)) eq 1 then\
+/*   72 */   continue;\
+/*   73 */   end if;\
+/*   74 */   C := HyperellipticCurve(f);\
+/*   75 */   J := AnalyticJacobian(C);\
+/*   76 */   E := EndomorphismRing(J);\
+/*   77 */   print(R!MinimalPolynomial(E.1));\
+/*   78 */   print(f);\
+/*   79 */   print(Conductor(C));\
+/*   80 */   end for;\
+/*   81 */   end for;\
+/*   82 */   for a in [-5 .. 5] do\
+/*   83 */   for b in [-5 .. 5] do\
+/*   84 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*   85 */   if not Gcd(f, Derivative(f)) eq 1 then\
+/*   86 */   continue;\
+/*   87 */   end if;\
+/*   88 */   C := HyperellipticCurve(f);\
+/*   89 */   J := AnalyticJacobian(C);\
+/*   90 */   E := EndomorphismRing(J);\
+/*   91 */   if R!MinimalPolynomial(E.1)) eq x-1 then\
+/*   92 */   for a in [-5 .. 5] do\
+/*   93 */   for b in [-5 .. 5] do\
+/*   94 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*   95 */   if not Gcd(f, Derivative(f)) eq 1 then\
+/*   96 */   continue;\
+/*   97 */   end if;\
+/*   98 */   C := HyperellipticCurve(f);\
+/*   99 */   J := AnalyticJacobian(C);\
+/*  100 */   E := EndomorphismRing(J);\
+/*  101 */   if R!MinimalPolynomial(E.1) eq x-1 then\
+/*  102 */   continue;\
+/*  103 */   end if;\
+/*  104 */   print(R!MinimalPolynomial(E.1));\
+/*  105 */   print(Conductor(C));\
+/*  106 */   print(C);\
+/*  107 */   end for;\
+/*  108 */   end for;\
+/*  109 */   for a in [-5 .. 5] do\
+/*  110 */   for b in [-5 .. 5] do\
+/*  111 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*  112 */   if not Gcd(f, Derivative(f)) eq 1 then\
+/*  113 */   continue;\
+/*  114 */   end if;\
+/*  115 */   for a in [-5 .. 5] do\
+/*  116 */   for b in [-5 .. 5] do\
+/*  117 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*  118 */   if not Gcd(f, Derivative(f)) eq 1 then\
+/*  119 */   continue;\
+/*  120 */   end if;\
+/*  121 */   C := HyperellipticCurve(f);\
+/*  122 */   J := AnalyticJacobian(C);\
+/*  123 */   E := EndomorphismRing(J);\
+/*  124 */   if R!MinimalPolynomial(E.1) eq x-1 then\
+/*  125 */   continue;\
+/*  126 */   end if;\
+/*  127 */   print(R!MinimalPolynomial(E.1));\
+/*  128 */   print(Conductor(C));\
+/*  129 */   print(C);\
+/*  130 */   print([a,b]);\
+/*  131 */   end for;\
+/*  132 */   end for;\
+/*  133 */   for a in [-10 .. 10] do\
+/*  134 */   for b in [-10 .. 10] do\
+/*  135 */   f := x^5 - (x^2 + a*x + b)^2;\
+/*  136 */   if not Gcd(f, Derivative(f)) eq 1 then\
+/*  137 */   continue;\
+/*  138 */   end if;\
+/*  139 */   C := HyperellipticCurve(f);\
+/*  140 */   J := AnalyticJacobian(C);\
+/*  141 */   E := EndomorphismRing(J);\
+/*  142 */   if R!MinimalPolynomial(E.1) eq x-1 then\
+/*  143 */   continue;\
+/*  144 */   end if;\
+/*  145 */   print(R!MinimalPolynomial(E.1));\
+/*  146 */   print(Conductor(C));\
+/*  147 */   print(C);\
+/*  148 */   print([a,b]);\
+/*  149 */   end for;\
+/*  150 */   end for;\
+/*  151 */   f = y^5 - 3;\
+/*  152 */   f = x^5 - 3;\
+/*  153 */   f := x^5 - 3;\
+/*  154 */   f;\
+/*  155 */   C := HyperellipticCurve(f);\
+/*  156 */   J := AnalyticJacobian(C);\
+/*  157 */   E := EndomorphismRing(J);\
+/*  158 */   E;\
+/*  159 */   E.1;\
+/*  160 */   MinimalPolynomial(E.1);\
+/*  161 */   for a in [-10, 10] do\
+/*  162 */   C := HyperellipticCurve(x^5 + a);\
+/*  163 */   E := EndomorphismRing(AnalyticJacobian(C));\
+/*  164 */   MinimalPolynomial(E.1);\
+/*  165 */   Conductor(E);\
+/*  166 */   end for;\
+/*  167 */   for a in [-10, 10] do\
+/*  168 */   C := HyperellipticCurve(x^5 + a);\
+/*  169 */   E := EndomorphismRing(AnalyticJacobian(C));\
+/*  170 */   MinimalPolynomial(E.1);\
+/*  171 */   Conductor(C);\
+/*  172 */   end for;\
+/*  173 */   for a in [-10, 10] do\
+/*  174 */   print(a);\
+/*  175 */   C := HyperellipticCurve(x^5 + a);\
+/*  176 */   E := EndomorphismRing(AnalyticJacobian(C));\
+/*  177 */   print(MinimalPolynomial(E.1));\
+/*  178 */   print(Conductor(C));\
+/*  179 */   end for;\
+/*  180 */   for a in [-10 .. 10] do\
+/*  181 */   print(a);\
+/*  182 */   C := HyperellipticCurve(x^5 + a);\
+/*  183 */   E := EndomorphismRing(AnalyticJacobian(C));\
+/*  184 */   print(MinimalPolynomial(E.1));\
+/*  185 */   print(Conductor(C));\
+/*  186 */   end for;\
+/*  187 */   for a in [-10 .. 10] do\
+/*  188 */   print(a);\
+/*  189 */   C := HyperellipticCurve(x^5 + a);\
+/*  190 */   for a in [-10 .. 10] do\
+/*  191 */   print(a);\
+/*  192 */   if a eq 0 then\
+/*  193 */   continue;\
+/*  194 */   end if;\
+/*  195 */   print(a);\
+/*  196 */   print(Conductor(HyperellipticCurve(x^5 + a)));\
+/*  197 */   end for;\
+/*  198 */   C = HyperellipticCurve(R([1, 0, 0, 0, 0, 1]), R([]));\
+/*  199 */   C := HyperellipticCurve(x^5 + 1);\
+/*  200 */   C;\
+/*  201 */   Conductor(C);\
+/*  202 */   LSeries(C);\
+/*  203 */   HeckeCharacter(C);\
+/*  204 */   for a in [-10 .. 10] do\
+/*  205 */   print(a);\
+/*  206 */   C := HyperellipticCurve(x^5 + a);\
+/*  207 */   for a in [-10 .. 10] do\
+/*  208 */   print(a);\
+/*  209 */   C := HyperellipticCurve(x^5 - (x-a)^2);\
+/*  210 */   J := AnalyticJacobian(C);\
+/*  211 */   E := EndomorphismRing(J);\
+/*  212 */   if R!MinimalPolynomial(E.1) eq x-1 then\
+/*  213 */   continue;\
+/*  214 */   end if;\
+/*  215 */   print(R!MinimalPolynomial(E.1));\
+/*  216 */   print(Conductor(C));\
+/*  217 */   end for;\
+/*  218 */   for a in [-10 .. 10] do\
+/*  219 */   if a eq 0 then\
+/*  220 */   continue;\
+/*  221 */   end if;\
+/*  222 */   print(a);\
+/*  223 */   C := HyperellipticCurve(x^5 - (x-a)^2);\
+/*  224 */   J := AnalyticJacobian(C);\
+/*  225 */   E := EndomorphismRing(J);\
+/*  226 */   if R!MinimalPolynomial(E.1) eq x-1 then\
+/*  227 */   continue;\
+/*  228 */   end if;\
+/*  229 */   print(R!MinimalPolynomial(E.1));\
+/*  230 */   print(Conductor(C));\
+/*  231 */   end for;\
+/*  232 */   for a in [-100 .. 100] do\
+/*  233 */   if a eq 0 then\
+/*  234 */   continue;\
+/*  235 */   end if;\
+/*  236 */   print(a);\
+/*  237 */   C := HyperellipticCurve(x^5 - (x-a)^2);\
+/*  238 */   J := AnalyticJacobian(C);\
+/*  239 */   E := EndomorphismRing(J);\
+/*  240 */   if R!MinimalPolynomial(E.1) eq x-1 then\
+/*  241 */   continue;\
+/*  242 */   end if;\
+/*  243 */   print(R!MinimalPolynomial(E.1));\
+/*  244 */   print(Conductor(C));\
+/*  245 */   end for;\
+}
